@@ -133,6 +133,8 @@ def format_all_examples(examples):
 def build_text_dataset(texts):
     """Wrap a list of training strings in a HF Dataset with a 'text' column."""
     # TODO: return a datasets.Dataset with one 'text' column holding the given strings
+
+    from datasets import Dataset
     return Dataset.from_dict({"text": texts})
 
 # Step 13 - tokenize_text
@@ -151,6 +153,11 @@ def count_tokens(input_ids):
 def build_training_arguments(output_dir='./sft_out', max_steps=5, learning_rate=2e-4):
     """Return featherweight TrainingArguments for the SFT run."""
     # TODO: build TrainingArguments with batch size 1, given max_steps, given lr, bf16 or fp16.
+
+    import torch
+    from transformers import TrainingArguments
+
+
     return TrainingArguments(
         output_dir=output_dir,
         per_device_train_batch_size=1,
@@ -168,11 +175,11 @@ from trl import SFTTrainer
 
 def build_sft_trainer(model, tokenizer, dataset, training_args, max_seq_length=256):
     """Construct a trl SFTTrainer over dataset['text'] ready to .train()."""
-    # TODO: wire model, tokenizer, dataset, and training_args into an SFTTrainer
+# TODO: wire model, tokenizer, dataset, and training_args into an SFTTrainer
     return SFTTrainer(
         model=model,
         tokenizer=tokenizer,
-        train_dataset=Dataset,
+        train_dataset=dataset,
         args=training_args,
         dataset_text_field="text",
         max_seq_length=max_seq_length,
