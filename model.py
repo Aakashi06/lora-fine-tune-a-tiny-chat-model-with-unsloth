@@ -171,19 +171,30 @@ def build_training_arguments(output_dir='./sft_out', max_steps=5, learning_rate=
     )
 
 # Step 16 - build_sft_trainer
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 def build_sft_trainer(model, tokenizer, dataset, training_args, max_seq_length=256):
     """Construct a trl SFTTrainer over dataset['text'] ready to .train()."""
 # TODO: wire model, tokenizer, dataset, and training_args into an SFTTrainer
+    sft_config = SFTConfig(
+        output_dir=training_args.output_dir,
+        per_device_train_batch_size=training_args.per_device_train_batch_size,
+        gradient_accumulation_steps=training_args.gradient_accumulation_steps,
+        max_steps=training_args.max_steps,
+        learning_rate=training_args.learning_rate,
+        logging_steps=training_args.logging_steps,
+        optim=training_args.optim,
+        bf16=training_args.bf16,
+        fp16=training_args.fp16,
+        max_seq_length=max_seq_length,
+        dataset_text_field="text",
+        packing=False,
+    )
     return SFTTrainer(
         model=model,
         tokenizer=tokenizer,
         train_dataset=dataset,
-        args=training_args,
-        dataset_text_field="text",
-        max_seq_length=max_seq_length,
-        packing=False,
+        args=sft_config,
     )
 
 # Step 17 - run_sft_training
@@ -191,9 +202,7 @@ def run_sft_training(trainer):
     """Run a few SFT steps and return the final training loss as a float."""
     # TODO: drive the trainer through its short optimization run and return the final loss
     train_output = trainer.train()
-
-    metrics = train_output.metrics
-    return float(metrics["train_loss"])
+    return float(train_output.metrics["train_loss"])
 
 # Step 18 - switch_to_inference_mode (not yet solved)
 # TODO: implement
